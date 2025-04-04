@@ -6,16 +6,25 @@ export default function Home() {
   const [youtubeUrl, setYoutubeUrl] = useState("");
   const [transcript, setTranscript] = useState("");
   const [copied, setCopied] = useState(false);
+  const [gettingTranscript, setGettingTranscript] = useState(false);
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+    setGettingTranscript(true); // Indicate loading *before* the fetch
+
     try {
       const response = await fetch(`/api/transcript?youtubeUrl=${youtubeUrl}`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`); // Handle HTTP errors
+      }
       const data = await response.json();
       setTranscript(data.transcript);
       setCopied(false); // Reset copied state after new transcript
     } catch (error: any) {
-      setTranscript(`Error: ${error.message}`);
+      console.error("Fetching transcript failed:", error); // Log the error for debugging
+      setTranscript(`Error: ${error.message}`); // Display error to user
+    } finally {
+      setGettingTranscript(false); // Ensure loading is always turned off
     }
   };
 
@@ -36,21 +45,21 @@ export default function Home() {
               htmlFor="youtubeUrl"
               className="block text-sm font-medium text-gray-700"
             >
-              YouTube URL:
+              Enter YouTube URL:
             </label>
             <input
               type="text"
               id="youtubeUrl"
               value={youtubeUrl}
               onChange={(e) => setYoutubeUrl(e.target.value)}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
+              className="mt-1 block w-full rounded-md border-gray-300 py-2 px-3 text-base leading-6 text-gray-900 shadow-sm focus:border-purple-500 focus:ring-purple-500"
             />
           </div>
           <button
             type="submit"
-            className="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-700 hover:bg-purple-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
+            className="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-700 hover:bg-purple-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 cursor-pointer"
           >
-            Get Transcript
+            {gettingTranscript ? "Getting Transcript..." : "Get Transcript"}
           </button>
         </form>
 
