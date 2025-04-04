@@ -20,9 +20,9 @@ export default function Home() {
       const data = await response.json();
       setTranscript(data.transcript);
       setCopied(false); // Reset copied state after new transcript
-    } catch (error: any) {
-      console.error("Fetching transcript failed:", error); // Log the error for debugging
-      setTranscript(`Error: ${error.message}`); // Display error to user
+    } catch (error) {
+      console.error("Fetching transcript failed:", error as Error); // Log the error for debugging
+      setTranscript(`Error: ${(error as Error).message}`); // Display error to user
     } finally {
       setGettingTranscript(false); // Ensure loading is always turned off
     }

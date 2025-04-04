@@ -12,8 +12,8 @@ export async function fetchYoutubeTranscript(videoId: string): Promise<string> {
     const transcript = await YoutubeTranscript.fetchTranscript(videoId);
     const fullText = transcript.map((entry) => entry.text).join("\n");
     return fullText;
-  } catch (error: any) {
-    console.error("Error fetching transcript:", error.message);
-    return `Error: ${error.message}`;
+  } catch (error) {
+    console.error("Error fetching transcript:", (error as Error).message);
+    return `Error: ${(error as Error).message}`;
   }
 }

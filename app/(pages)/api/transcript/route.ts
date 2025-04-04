@@ -24,10 +24,10 @@ export async function GET(request: NextRequest) {
   try {
     const transcript = await fetchYoutubeTranscript(videoId);
     return NextResponse.json({ transcript: transcript }, { status: 200 });
-  } catch (error: any) {
-    console.error("API Error:", error.message);
+  } catch (error) {
+    console.error("API Error:", (error as Error).message);
     return NextResponse.json(
-      { transcript: `Error: ${error.message}` },
+      { transcript: `Error: ${(error as Error).message}` },
       { status: 500 }
     );
   }
