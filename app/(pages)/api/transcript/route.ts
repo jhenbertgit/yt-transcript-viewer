@@ -1,4 +1,3 @@
-// app/api/transcript/route.ts
 import { fetchYoutubeTranscript, extractVideoId } from "@/lib/utils/youtube";
 import { NextRequest, NextResponse } from "next/server";
 
