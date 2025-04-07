@@ -103,7 +103,7 @@ export default function Home() {
               {transcript}
             </div>
             <CopyToClipboard text={transcript} onCopy={handleCopy}>
-              <button className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline flex items-center">
+              <button className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline flex items-center cursor-pointer">
                 {copied ? (
                   <>
                     <CheckIcon className="h-5 w-5 mr-2" />
