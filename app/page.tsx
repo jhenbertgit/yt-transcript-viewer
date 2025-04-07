@@ -1,6 +1,12 @@
 "use client";
 import { useState } from "react";
 import { CopyToClipboard } from "react-copy-to-clipboard";
+import {
+  CheckIcon,
+  ClipboardIcon,
+  ArrowUpIcon,
+} from "@heroicons/react/24/outline";
+import he from "he";
 
 export default function Home() {
   const [youtubeUrl, setYoutubeUrl] = useState("");
@@ -10,57 +16,82 @@ export default function Home() {
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    setGettingTranscript(true); // Indicate loading *before* the fetch
-
+    setGettingTranscript(true);
     try {
       const response = await fetch(`/api/transcript?youtubeUrl=${youtubeUrl}`);
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`); // Handle HTTP errors
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
       const data = await response.json();
-      setTranscript(data.transcript);
-      setCopied(false); // Reset copied state after new transcript
+      // First decode
+      let decodedTranscript = he.decode(data.transcript);
+      // Check if double encoded
+      if (decodedTranscript.includes("&#39;")) {
+        decodedTranscript = he.decode(decodedTranscript); // Decode again if necessary
+      }
+      setTranscript(decodedTranscript);
+      setCopied(false);
     } catch (error) {
-      console.error("Fetching transcript failed:", error as Error); // Log the error for debugging
-      setTranscript(`Error: ${(error as Error).message}`); // Display error to user
+      console.error("Fetching transcript failed:", error as Error);
+      setTranscript(`Error: ${(error as Error).message}`);
     } finally {
-      setGettingTranscript(false); // Ensure loading is always turned off
+      setGettingTranscript(false);
     }
   };
 
   const handleCopy = () => {
     setCopied(true);
-    setTimeout(() => setCopied(false), 2000); // Reset after 2 seconds
+    setTimeout(() => setCopied(false), 2000);
   };
 
   return (
     <div className="min-h-screen bg-gray-100 py-6 flex items-center justify-center">
-      <div className="container max-w-3xl mx-auto bg-white shadow-lg rounded-lg overflow-hidden p-8">
+      <div className="container max-w-4xl mx-auto bg-white shadow-lg rounded-xl overflow-hidden p-8">
         <h1 className="text-3xl font-semibold text-gray-800 mb-6 text-center">
           YouTube Transcript Viewer
         </h1>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label
-              htmlFor="youtubeUrl"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Enter YouTube URL:
-            </label>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="relative flex items-center">
             <input
               type="text"
               id="youtubeUrl"
               value={youtubeUrl}
               onChange={(e) => setYoutubeUrl(e.target.value)}
-              className="mt-1 block w-full rounded-md border-gray-300 py-2 px-3 text-base leading-6 text-gray-900 shadow-sm focus:border-purple-500 focus:ring-purple-500"
+              className="block w-full rounded-full border-gray-300 py-2 px-4 pr-12 text-base leading-6 text-gray-900 shadow-sm focus:border-purple-500 focus:ring-purple-500 transition-all duration-200"
+              placeholder="Enter YouTube URL"
             />
+            <button
+              type="submit"
+              className="absolute right-1 top-1/2 transform -translate-y-1/2 bg-purple-700 hover:bg-purple-500 text-white font-bold rounded-full p-2 focus:outline-none focus:shadow-outline transition-all duration-200 cursor-pointer"
+              disabled={gettingTranscript}
+              aria-label="Get Transcript"
+            >
+              {gettingTranscript ? (
+                <svg
+                  className="animate-spin h-5 w-5 mx-auto"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
+                </svg>
+              ) : (
+                <ArrowUpIcon className="h-5 w-5" />
+              )}
+            </button>
           </div>
-          <button
-            type="submit"
-            className="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-700 hover:bg-purple-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 cursor-pointer"
-          >
-            {gettingTranscript ? "Getting Transcript..." : "Get Transcript"}
-          </button>
         </form>
 
         {transcript && (
@@ -68,12 +99,22 @@ export default function Home() {
             <h2 className="text-xl font-semibold text-gray-800 mb-4">
               Transcript:
             </h2>
-            <div className="whitespace-pre-line text-gray-700 mb-4">
+            <div className="whitespace-pre-line text-gray-700 mb-4 rounded-md p-4 bg-gray-50 break-words overflow-x-auto">
               {transcript}
             </div>
             <CopyToClipboard text={transcript} onCopy={handleCopy}>
-              <button className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
-                {copied ? "Copied!" : "Copy to Clipboard"}
+              <button className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline flex items-center">
+                {copied ? (
+                  <>
+                    <CheckIcon className="h-5 w-5 mr-2" />
+                    Copied!
+                  </>
+                ) : (
+                  <>
+                    <ClipboardIcon className="h-5 w-5 mr-2" />
+                    Copy
+                  </>
+                )}
               </button>
             </CopyToClipboard>
           </div>
